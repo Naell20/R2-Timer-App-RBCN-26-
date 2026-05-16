@@ -177,7 +177,7 @@ class RoboconTimerApp:
 
         block_title = tk.Label(
             arena_frame,
-            text="Arena Blok",
+            text="Meihua Forest",
             font=("Helvetica", 13, "bold"),
             bg="#2c3e50",
             fg="white"
@@ -475,13 +475,8 @@ class RoboconTimerApp:
                 f"[{self.phase} - {elapsed_str}] "
                 f"Blok MF {block_number} KFS gagal diambil / jatuh"
             )
-        
-        #Klik Ketiga -> Balik Biru 
-        elif current_state == 2:
-            
-            btn.config(
 
-            )
+        #Klik Ketiga -> Balik ke Biru 
         # # Klik berikutnya 
         # else:
 
