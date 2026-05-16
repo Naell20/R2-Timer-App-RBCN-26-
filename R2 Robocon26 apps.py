@@ -475,7 +475,13 @@ class RoboconTimerApp:
                 f"[{self.phase} - {elapsed_str}] "
                 f"Blok MF {block_number} KFS gagal diambil / jatuh"
             )
+        
+        #Klik Ketiga -> Balik Biru 
+        elif current_state == 2:
+            
+            btn.config(
 
+            )
         # # Klik berikutnya 
         # else:
 
