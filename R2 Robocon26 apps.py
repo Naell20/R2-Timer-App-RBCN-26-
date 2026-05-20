@@ -164,7 +164,7 @@ class RoboconTimerApp:
                 score_frame,
                 text=btn_text,
                 font=("Helvetica", 11),
-                width=24,
+                width=250,
                 command=lambda p=points, act=action_name:
                 self.add_score(p, act)
             )
@@ -488,7 +488,7 @@ class RoboconTimerApp:
                 f"Blok MF {block_number} KFS gagal diambil / jatuh"
             )
 
-        # Klik ketiga -> BIRU lagi
+        # Klik ketiga -> Balik Biru
         elif current_state == 2:
 
             btn.config(
