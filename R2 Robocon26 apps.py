@@ -35,7 +35,7 @@ class RoboconTimerApp:
         # Penyimpanan tombol blok MF
         self.block_buttons = []
 
-        # Status blok (1 klik hijau, 2x klik merah brti kfs gagal di ambil/ sudah diambil tapi jatuh)
+        # Status blok
         self.block_states = {}
 
         # Setup UI
@@ -185,12 +185,24 @@ class RoboconTimerApp:
 
         block_title.pack(pady=5)
 
+        # Tombol Reset Blok MF
+        reset_MF_btn = tk.Button(
+            arena_frame,
+            text="Reset Blok MF",
+            font=("Helvetica", 10, "bold"),
+            bg="#7f8c8d",
+            fg="white",
+            command=self.reset_blocks
+        )
+
+        reset_MF_btn.pack(pady=8)
+
         self.block_frame = tk.Frame(arena_frame, bg="#2c3e50")
         self.block_frame.pack()
 
         # BLOK MF
-        for row in range(4): # pnjang ke blkng
-            for col in range(3): # lebr ke smping
+        for row in range(4):
+            for col in range(3):
 
                 block_number = row * 3 + col + 1
 
@@ -476,11 +488,11 @@ class RoboconTimerApp:
                 f"Blok MF {block_number} KFS gagal diambil / jatuh"
             )
 
-        #Klik ketiga -> Balik ke Biru
+        # Klik ketiga -> BIRU lagi
         elif current_state == 2:
 
-            btn.config (
-                bg="#2988b9",
+            btn.config(
+                bg="#2980b9",
                 fg="white",
                 text=f"{block_number}\n{elapsed_str}"
             )
@@ -492,20 +504,29 @@ class RoboconTimerApp:
                 f"Blok MF {block_number} Diambil lagi"
             )
 
-        #Klik Ketiga -> Balik ke Biru 
-        # # Klik berikutnya 
-        # else:
-
-        #     btn.config(
-        #         text=f"{block_number}\n{elapsed_str}"
-        #     )
-
-        #     log_text = (
-        #         f"[{self.phase} - {elapsed_str}] "
-        #         f"Blok MF {block_number} ditekan lagi"
-        #     )
-
         self.log_list.insert(tk.END, log_text)
+        self.log_list.yview(tk.END)
+
+    # RESET BLOK MF
+    def reset_blocks(self):
+
+        # Reset status blok
+        self.block_states.clear()
+
+        # Reset tampilan semua blok
+        for i, btn in enumerate(self.block_buttons):
+
+            btn.config(
+                bg="#27ae60",
+                fg="white",
+                text=f"{i+1}"
+            )
+
+        self.log_list.insert(
+            tk.END,
+            f"[{self.phase}] Semua blok Meihua Forest di reset"
+        )
+
         self.log_list.yview(tk.END)
 
     # RESET SCORE
