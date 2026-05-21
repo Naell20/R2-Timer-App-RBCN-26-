@@ -164,7 +164,7 @@ class RoboconTimerApp:
                 score_frame,
                 text=btn_text,
                 font=("Helvetica", 11),
-                width=250,
+                width=24,
                 command=lambda p=points, act=action_name:
                 self.add_score(p, act)
             )
@@ -488,7 +488,7 @@ class RoboconTimerApp:
                 f"Blok MF {block_number} KFS gagal diambil / jatuh"
             )
 
-        # Klik ketiga -> Balik Biru
+        # Klik ketiga -> BIRU lagi
         elif current_state == 2:
 
             btn.config(
@@ -524,7 +524,7 @@ class RoboconTimerApp:
 
         self.log_list.insert(
             tk.END,
-            f"[{self.phase}] Semua blok Meihua Forest di reset"
+            f"[{self.phase}] Semua blok Meihua Forest di-reset"
         )
 
         self.log_list.yview(tk.END)
