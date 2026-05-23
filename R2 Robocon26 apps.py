@@ -398,6 +398,23 @@ class RoboconTimerApp:
 
         self.is_running = False
 
+        if self.try_mode:
+
+            if len(self.assembly_time) > 0:
+
+                avg = sum(self.assembly_time) / len(self.assembly_time)
+
+                avg_text = self.format_time(int(avg))
+
+            else:
+
+                avg_text = "00:00"
+
+            messagebox.showinfo(
+                "Rata-rata Assembly",
+                f"Rata Rata Waktu Assembly:\n{avg_text}"
+            )
+
     # TRY MODE
     def start_try_mode(self):
 
@@ -444,33 +461,30 @@ class RoboconTimerApp:
             f"Rata-rata waktu:\n{avg_text}"
         )
 
-    # MATCH PHASE
+    # Fase Pertandingan 
     def to_match_phase(self):
 
         self.is_running = False
-
-        # tampilkan rata-rata
-        self.show_average_assembly()
 
         self.try_mode = False
 
         self.phase = "Pertandingan"
 
         self.phase_label.config(
-            text="Fase: Pertandingan",
-            fg="#e74c3c"
-        )
+        text="Fase: Pertandingan",
+        fg="#e74c3c"
+    )
 
         self.current_time = self.match_time
 
         self.timer_label.config(
-            text=self.format_time(self.current_time),
-            fg="white"
+        text=self.format_time(self.current_time),
+        fg="white"
         )
 
         self.log_list.insert(
-            tk.END,
-            "--- FASE PERTANDINGAN DIMULAI ---"
+        tk.END,
+        "--- PERTANDINGAN DIMULAI ---"
         )
 
         self.log_list.yview(tk.END)
