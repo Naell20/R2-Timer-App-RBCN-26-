@@ -4,13 +4,21 @@ import pygame
 import os
 
 class RoboconTimerApp:
+
     def __init__(self, root):
+
         self.root = root
-        self.root.title("Timer & Scoring Latihan Robocon 2026")
+        self.root.title("R2 Timer & Scoring Latihan Robocon 2026")
         self.root.geometry("950x850")
         self.root.configure(bg="#2c3e50")
 
-        # Inisialisasi Audio
+        # TRY MODE
+        self.try_mode = False
+
+        # Simpan waktu assembly
+        self.assembly_time = []
+
+        # AUDIO
         pygame.mixer.init()
 
         self.sound_file = "warning.wav"
@@ -21,7 +29,7 @@ class RoboconTimerApp:
             self.warning_sound = None
             print(f"Peringatan: File {self.sound_file} tidak ditemukan.")
 
-        # State Variable
+        # STATE
         self.setup_time = 60
         self.match_time = 180
 
@@ -32,16 +40,15 @@ class RoboconTimerApp:
 
         self.score = 0
 
-        # Penyimpanan tombol blok MF
+        # BLOK
         self.block_buttons = []
-
-        # Status blok
         self.block_states = {}
 
-        # Setup UI
+        # UI
         self.setup_ui()
 
     # AUDIO ALERT
+
     def play_alert(self):
 
         if self.warning_sound:
@@ -63,7 +70,7 @@ class RoboconTimerApp:
 
         self.phase_label.pack(pady=15)
 
-        # TIMER DISPLAY
+        # TIMER
         self.timer_label = tk.Label(
             self.root,
             text=self.format_time(self.current_time),
@@ -74,10 +81,11 @@ class RoboconTimerApp:
 
         self.timer_label.pack(pady=10)
 
-        # CONTROL BUTTON
+        # CONTROL FRAME
         control_frame = tk.Frame(self.root, bg="#2c3e50")
         control_frame.pack(pady=10)
 
+        # START
         self.start_btn = tk.Button(
             control_frame,
             text="Mulai / Lanjut",
@@ -90,6 +98,7 @@ class RoboconTimerApp:
 
         self.start_btn.grid(row=0, column=0, padx=5)
 
+        # PAUSE
         self.pause_btn = tk.Button(
             control_frame,
             text="Jeda",
@@ -102,6 +111,7 @@ class RoboconTimerApp:
 
         self.pause_btn.grid(row=0, column=1, padx=5)
 
+        # MATCH
         self.next_btn = tk.Button(
             control_frame,
             text="Masuk Pertandingan",
@@ -114,6 +124,7 @@ class RoboconTimerApp:
 
         self.next_btn.grid(row=0, column=2, padx=5)
 
+        # RESET TIMER
         self.reset_btn = tk.Button(
             control_frame,
             text="Reset Waktu",
@@ -126,7 +137,20 @@ class RoboconTimerApp:
 
         self.reset_btn.grid(row=0, column=3, padx=5)
 
-        # SCORE DISPLAY
+        # TRY MODE
+        self.try_btn = tk.Button(
+            control_frame,
+            text="Mode Try",
+            font=("Helvetica", 11, "bold"),
+            command=self.start_try_mode,
+            width=12,
+            bg="#8e44ad",
+            fg="white"
+        )
+
+        self.try_btn.grid(row=0, column=4, padx=5)
+
+        # SCORE
         self.score_label = tk.Label(
             self.root,
             text=f"Skor: {self.score}",
@@ -137,11 +161,11 @@ class RoboconTimerApp:
 
         self.score_label.pack(pady=15)
 
-        # MAIN CONTENT FRAME
+        # MAIN FRAME
         main_frame = tk.Frame(self.root, bg="#2c3e50")
         main_frame.pack(pady=10)
 
-        # FRAME KIRI = SCORING
+        # SCORE FRAME
         score_frame = tk.Frame(main_frame, bg="#2c3e50")
         score_frame.pack(side=tk.LEFT, padx=20, anchor="n")
 
@@ -171,7 +195,7 @@ class RoboconTimerApp:
 
             btn.grid(row=i, column=0, pady=5)
 
-        # FRAME KANAN = ARENA BLOK MF
+        # ARENA FRAME
         arena_frame = tk.Frame(main_frame, bg="#2c3e50")
         arena_frame.pack(side=tk.LEFT, padx=20, anchor="n")
 
@@ -185,7 +209,7 @@ class RoboconTimerApp:
 
         block_title.pack(pady=5)
 
-        # Tombol Reset Blok MF
+        # RESET BLOK
         reset_MF_btn = tk.Button(
             arena_frame,
             text="Reset Blok MF",
@@ -202,6 +226,7 @@ class RoboconTimerApp:
 
         # BLOK MF
         for row in range(4):
+
             for col in range(3):
 
                 block_number = row * 3 + col + 1
@@ -227,7 +252,7 @@ class RoboconTimerApp:
 
                 self.block_buttons.append(btn)
 
-        # KUNG FU MASTER BUTTON
+        # KFM
         kf_master_btn = tk.Button(
             self.root,
             text="KUNG FU MASTER (Menang!)",
@@ -239,7 +264,7 @@ class RoboconTimerApp:
 
         kf_master_btn.pack(pady=10)
 
-        # LOG HISTORY
+        # LOG
         log_label = tk.Label(
             self.root,
             text="Log Poin & Waktu:",
@@ -282,7 +307,7 @@ class RoboconTimerApp:
 
         self.scrollbar.config(command=self.log_list.yview)
 
-        # RESET SCORE BUTTON
+        # RESET SCORE
         reset_score_btn = tk.Button(
             self.root,
             text="Reset Skor & Log",
@@ -302,7 +327,7 @@ class RoboconTimerApp:
 
         return f"{mins:02d}:{secs:02d}"
 
-    # UPDATE TIMER
+    # TIMER NORMAL
     def update_timer(self):
 
         if self.is_running and self.current_time > 0:
@@ -313,7 +338,6 @@ class RoboconTimerApp:
                 text=self.format_time(self.current_time)
             )
 
-            # Warning 10 detik terakhir
             if self.current_time <= 10 and self.current_time > 0:
 
                 self.timer_label.config(fg="#e74c3c")
@@ -328,53 +352,107 @@ class RoboconTimerApp:
 
             self.is_running = False
 
-            self.timer_label.config(fg="white")
-
             self.play_alert()
 
             if self.phase == "Persiapan":
 
                 messagebox.showinfo(
                     "Persiapan Selesai",
-                    "Waktu persiapan habis.\nTekan 'Masuk Pertandingan'."
-                )
-
-                self.log_list.insert(
-                    tk.END,
-                    "--- WAKTU PERSIAPAN HABIS ---"
+                    "Waktu persiapan habis."
                 )
 
             else:
 
                 messagebox.showinfo(
                     "Waktu Habis",
-                    f"Pertandingan selesai!\nSkor Akhir: {self.score}"
+                    f"Pertandingan selesai!\nSkor: {self.score}"
                 )
 
-                self.log_list.insert(
-                    tk.END,
-                    f"--- PERTANDINGAN SELESAI | Skor: {self.score} ---"
-                )
+    # TRY TIMER
+    def update_try_timer(self):
 
-            self.log_list.yview(tk.END)
+        if self.is_running and self.try_mode:
 
-    # START TIMER
+            self.current_time += 1
+
+            self.timer_label.config(
+                text=self.format_time(self.current_time)
+            )
+
+            self.root.after(1000, self.update_try_timer)
+
+    # START
     def start_timer(self):
 
-        if not self.is_running and self.current_time > 0:
+        if not self.is_running:
 
             self.is_running = True
-            self.update_timer()
 
-    # PAUSE TIMER
+            if self.try_mode:
+                self.update_try_timer()
+            else:
+                self.update_timer()
+
+    # PAUSE
     def pause_timer(self):
 
         self.is_running = False
+
+    # TRY MODE
+    def start_try_mode(self):
+
+        self.is_running = False
+
+        self.try_mode = True
+
+        self.phase = "TRY MODE"
+
+        self.current_time = 0
+
+        self.phase_label.config(
+            text="Fase: TRY MODE",
+            fg="#9b59b6"
+        )
+
+        self.timer_label.config(
+            text=self.format_time(self.current_time),
+            fg="white"
+        )
+
+        self.log_list.insert(
+            tk.END,
+            "--- TRY MODE DIMULAI ---"
+        )
+
+        self.log_list.yview(tk.END)
+
+    # RATA-RATA ASSEMBLY
+    def show_average_assembly(self):
+
+        if len(self.assembly_time) > 0:
+
+            avg = sum(self.assembly_time) / len(self.assembly_time)
+
+            avg_text = self.format_time(int(avg))
+
+        else:
+
+            avg_text = "00:00"
+
+        messagebox.showinfo(
+            "Rata-rata Weapon Assembly",
+            f"Rata-rata waktu:\n{avg_text}"
+        )
 
     # MATCH PHASE
     def to_match_phase(self):
 
         self.is_running = False
+
+        # tampilkan rata-rata
+        self.show_average_assembly()
+
+        self.try_mode = False
 
         self.phase = "Pertandingan"
 
@@ -392,7 +470,7 @@ class RoboconTimerApp:
 
         self.log_list.insert(
             tk.END,
-            "--- FASE PERTANDINGAN DISIAPKAN ---"
+            "--- FASE PERTANDINGAN DIMULAI ---"
         )
 
         self.log_list.yview(tk.END)
@@ -401,6 +479,8 @@ class RoboconTimerApp:
     def reset_timer(self):
 
         self.is_running = False
+
+        self.try_mode = False
 
         self.phase = "Persiapan"
 
@@ -425,9 +505,22 @@ class RoboconTimerApp:
             text=f"Skor: {self.score}"
         )
 
-        if self.phase == "Persiapan":
+        # SIMPAN WAKTU ASSEMBLY
+        if action_name == "Weapon Assembly" and self.try_mode:
+
+            self.assembly_time.append(self.current_time)
+
+        # ELAPSED TIME
+        if self.try_mode:
+
+            elapsed_secs = self.current_time
+
+        elif self.phase == "Persiapan":
+
             elapsed_secs = self.setup_time - self.current_time
+
         else:
+
             elapsed_secs = self.match_time - self.current_time
 
         elapsed_str = self.format_time(elapsed_secs)
@@ -440,6 +533,7 @@ class RoboconTimerApp:
         )
 
         self.log_list.insert(tk.END, log_text)
+
         self.log_list.yview(tk.END)
 
     # TOGGLE BLOCK
@@ -449,14 +543,9 @@ class RoboconTimerApp:
 
         current_state = self.block_states.get(block_number, 0)
 
-        if self.phase == "Persiapan":
-            elapsed_secs = self.setup_time - self.current_time
-        else:
-            elapsed_secs = self.match_time - self.current_time
+        elapsed_str = self.format_time(self.current_time)
 
-        elapsed_str = self.format_time(elapsed_secs)
-
-        # Klik pertama -> BIRU
+        # BIRU
         if current_state == 0:
 
             btn.config(
@@ -468,11 +557,11 @@ class RoboconTimerApp:
             self.block_states[block_number] = 1
 
             log_text = (
-                f"[{self.phase} - {elapsed_str}] "
-                f"Blok MF {block_number} KFS diambil"
+                f"[{self.phase}] "
+                f"Blok MF {block_number} diambil"
             )
 
-        # Klik kedua -> MERAH
+        # MERAH
         elif current_state == 1:
 
             btn.config(
@@ -484,12 +573,12 @@ class RoboconTimerApp:
             self.block_states[block_number] = 2
 
             log_text = (
-                f"[{self.phase} - {elapsed_str}] "
-                f"Blok MF {block_number} KFS gagal diambil / jatuh"
+                f"[{self.phase}] "
+                f"Blok MF {block_number} gagal"
             )
 
-        # Klik ketiga -> BIRU lagi
-        elif current_state == 2:
+        # BIRU LAGI
+        else:
 
             btn.config(
                 bg="#2980b9",
@@ -500,20 +589,19 @@ class RoboconTimerApp:
             self.block_states[block_number] = 3
 
             log_text = (
-                f"[{self.phase} - {elapsed_str}] "
-                f"Blok MF {block_number} Diambil lagi"
+                f"[{self.phase}] "
+                f"Blok MF {block_number} diambil lagi"
             )
 
         self.log_list.insert(tk.END, log_text)
+
         self.log_list.yview(tk.END)
 
-    # RESET BLOK MF
+    # RESET BLOK
     def reset_blocks(self):
 
-        # Reset status blok
         self.block_states.clear()
 
-        # Reset tampilan semua blok
         for i, btn in enumerate(self.block_buttons):
 
             btn.config(
@@ -524,7 +612,7 @@ class RoboconTimerApp:
 
         self.log_list.insert(
             tk.END,
-            f"[{self.phase}] Semua blok Meihua Forest di-reset"
+            f"[{self.phase}] Semua blok di-reset"
         )
 
         self.log_list.yview(tk.END)
@@ -540,10 +628,10 @@ class RoboconTimerApp:
 
         self.log_list.delete(0, tk.END)
 
-        # Reset status blok
         self.block_states.clear()
 
-        # Reset blok
+        self.assembly_time.clear()
+
         for i, btn in enumerate(self.block_buttons):
 
             btn.config(
@@ -557,24 +645,18 @@ class RoboconTimerApp:
 
         self.is_running = False
 
-        self.timer_label.config(fg="white")
-
-        elapsed_secs = self.match_time - self.current_time
-
-        elapsed_str = self.format_time(elapsed_secs)
+        elapsed_str = self.format_time(self.current_time)
 
         self.log_list.insert(
             tk.END,
-            f"[{self.phase} - {elapsed_str}] "
-            f"*** KUNG FU MASTER ***"
+            f"[{self.phase}] *** KUNG FU MASTER ***"
         )
 
         self.log_list.yview(tk.END)
 
         messagebox.showinfo(
             "KUNG FU MASTER!",
-            f"Robot berhasil mencapai "
-            f"Kung Fu Master pada {elapsed_str}!"
+            f"Robot berhasil mencapai\nKung Fu Master pada {elapsed_str}"
         )
 
 # MAIN
