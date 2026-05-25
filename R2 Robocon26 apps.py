@@ -81,7 +81,7 @@ class RoboconTimerApp:
 
         self.timer_label.pack(pady=10)
 
-        # CONTROL FRAME
+        # Atur Frame
         control_frame = tk.Frame(self.root, bg="#2c3e50")
         control_frame.pack(pady=10)
 
@@ -98,7 +98,7 @@ class RoboconTimerApp:
 
         self.start_btn.grid(row=0, column=0, padx=5)
 
-        # PAUSE
+        # PAUSEEE
         self.pause_btn = tk.Button(
             control_frame,
             text="Jeda",
