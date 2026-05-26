@@ -48,7 +48,6 @@ class RoboconTimerApp:
         self.setup_ui()
 
     # AUDIO ALERT
-
     def play_alert(self):
 
         if self.warning_sound:
@@ -98,7 +97,7 @@ class RoboconTimerApp:
 
         self.start_btn.grid(row=0, column=0, padx=5)
 
-        # PAUSEEE
+        # PAUSE
         self.pause_btn = tk.Button(
             control_frame,
             text="Jeda",
@@ -363,6 +362,14 @@ class RoboconTimerApp:
 
             else:
 
+                # TOTAL POINT KE LOG
+                self.log_list.insert(
+                    tk.END,
+                    f"[PERTANDINGAN SELESAI] TOTAL POINT: {self.score}"
+                )
+
+                self.log_list.yview(tk.END)
+
                 messagebox.showinfo(
                     "Waktu Habis",
                     f"Pertandingan selesai!\nSkor: {self.score}"
@@ -461,30 +468,48 @@ class RoboconTimerApp:
             f"Rata-rata waktu:\n{avg_text}"
         )
 
-    # Fase Pertandingan 
+    # FASE PERTANDINGAN
     def to_match_phase(self):
 
         self.is_running = False
 
         self.try_mode = False
 
+        # RESET SKOR OTOMATIS
+        self.score = 0
+
+        self.score_label.config(
+            text=f"Skor: {self.score}"
+        )
+
+        # RESET BLOK OTOMATIS
+        self.block_states.clear()
+
+        for i, btn in enumerate(self.block_buttons):
+
+            btn.config(
+                bg="#27ae60",
+                fg="white",
+                text=f"{i+1}"
+            )
+
         self.phase = "Pertandingan"
 
         self.phase_label.config(
-        text="Fase: Pertandingan",
-        fg="#e74c3c"
-    )
+            text="Fase: Pertandingan",
+            fg="#e74c3c"
+        )
 
         self.current_time = self.match_time
 
         self.timer_label.config(
-        text=self.format_time(self.current_time),
-        fg="white"
+            text=self.format_time(self.current_time),
+            fg="white"
         )
 
         self.log_list.insert(
-        tk.END,
-        "--- PERTANDINGAN DIMULAI ---"
+            tk.END,
+            "--- PERTANDINGAN DIMULAI ---"
         )
 
         self.log_list.yview(tk.END)
