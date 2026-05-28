@@ -3,6 +3,7 @@ from tkinter import messagebox
 import pygame
 import os
 
+
 class RoboconTimerApp:
 
     def __init__(self, root):
@@ -15,8 +16,9 @@ class RoboconTimerApp:
         # TRY MODE
         self.try_mode = False
 
-        # Simpan waktu assembly
+        # DATA ASSEMBLY
         self.assembly_time = []
+        self.last_assembly_time = 0
 
         # AUDIO
         pygame.mixer.init()
@@ -55,6 +57,20 @@ class RoboconTimerApp:
         else:
             self.root.bell()
 
+    # FORMAT TIME
+    def format_time(self, seconds):
+
+        mins = seconds // 60
+        secs = seconds % 60
+
+        return f"{mins:02d}:{secs:02d}"
+
+    # ADD LOG
+    def add_log(self, text):
+
+        self.log_list.insert(tk.END, text)
+        self.log_list.yview(tk.END)
+
     # UI
     def setup_ui(self):
 
@@ -80,7 +96,7 @@ class RoboconTimerApp:
 
         self.timer_label.pack(pady=10)
 
-        # Atur Frame
+        # CONTROL FRAME
         control_frame = tk.Frame(self.root, bg="#2c3e50")
         control_frame.pack(pady=10)
 
@@ -282,20 +298,22 @@ class RoboconTimerApp:
             expand=True
         )
 
-        self.scrollbar = tk.Scrollbar(log_frame)
+        # SCROLLBAR VERTIKAL
+        self.scrollbar_y = tk.Scrollbar(log_frame)
 
-        self.scrollbar.pack(
+        self.scrollbar_y.pack(
             side=tk.RIGHT,
             fill=tk.Y
         )
 
+        # LISTBOX LOG
         self.log_list = tk.Listbox(
             log_frame,
-            yscrollcommand=self.scrollbar.set,
+            yscrollcommand=self.scrollbar_y.set,
             font=("Consolas", 11),
             bg="#ecf0f1",
             fg="#2c3e50",
-            height=8
+            height=20
         )
 
         self.log_list.pack(
@@ -304,7 +322,7 @@ class RoboconTimerApp:
             expand=True
         )
 
-        self.scrollbar.config(command=self.log_list.yview)
+        self.scrollbar_y.config(command=self.log_list.yview)
 
         # RESET SCORE
         reset_score_btn = tk.Button(
@@ -317,14 +335,6 @@ class RoboconTimerApp:
         )
 
         reset_score_btn.pack(pady=10)
-
-    # FORMAT TIME
-    def format_time(self, seconds):
-
-        mins = seconds // 60
-        secs = seconds % 60
-
-        return f"{mins:02d}:{secs:02d}"
 
     # TIMER NORMAL
     def update_timer(self):
@@ -343,6 +353,7 @@ class RoboconTimerApp:
                 self.play_alert()
 
             else:
+
                 self.timer_label.config(fg="white")
 
             self.root.after(1000, self.update_timer)
@@ -362,17 +373,54 @@ class RoboconTimerApp:
 
             else:
 
-                # TOTAL POINT KE LOG
-                self.log_list.insert(
-                    tk.END,
-                    f"[PERTANDINGAN SELESAI] TOTAL POINT: {self.score}"
+                # HITUNG RATA-RATA ASSEMBLY
+                if len(self.assembly_time) > 0:
+
+                    avg = (
+                        sum(self.assembly_time)
+                        / len(self.assembly_time)
+                    )
+
+                    avg_text = self.format_time(int(avg))
+
+                    # TAMPILKAN SEMUA DATA
+                    assembly_data = ", ".join(
+                        [
+                            self.format_time(t)
+                            for t in self.assembly_time
+                        ]
+                    )
+
+                else:
+
+                    avg_text = "00:00"
+                    assembly_data = "Tidak ada data"
+
+                # LOG HASIL AKHIR
+                self.add_log(
+                    f"[PERTANDINGAN SELESAI] "
+                    f"TOTAL POINT: {self.score}"
                 )
 
-                self.log_list.yview(tk.END)
+                self.add_log(
+                    f"[PERTANDINGAN SELESAI] "
+                    f"DATA ASSEMBLY: {assembly_data}"
+                )
 
+                self.add_log(
+                    f"[PERTANDINGAN SELESAI] "
+                    f"RATA-RATA ASSEMBLY: {avg_text}"
+                )
+
+                # POPUP
                 messagebox.showinfo(
                     "Waktu Habis",
-                    f"Pertandingan selesai!\nSkor: {self.score}"
+                    f"Pertandingan selesai!"
+                    f"\nSkor: {self.score}"
+                    f"\n\nData Assembly:"
+                    f"\n{assembly_data}"
+                    f"\n\nRata-rata Assembly:"
+                    f"\n{avg_text}"
                 )
 
     # TRY TIMER
@@ -405,23 +453,6 @@ class RoboconTimerApp:
 
         self.is_running = False
 
-        if self.try_mode:
-
-            if len(self.assembly_time) > 0:
-
-                avg = sum(self.assembly_time) / len(self.assembly_time)
-
-                avg_text = self.format_time(int(avg))
-
-            else:
-
-                avg_text = "00:00"
-
-            messagebox.showinfo(
-                "Rata-rata Assembly",
-                f"Rata Rata Waktu Assembly:\n{avg_text}"
-            )
-
     # TRY MODE
     def start_try_mode(self):
 
@@ -443,30 +474,7 @@ class RoboconTimerApp:
             fg="white"
         )
 
-        self.log_list.insert(
-            tk.END,
-            "--- TRY MODE DIMULAI ---"
-        )
-
-        self.log_list.yview(tk.END)
-
-    # RATA-RATA ASSEMBLY
-    def show_average_assembly(self):
-
-        if len(self.assembly_time) > 0:
-
-            avg = sum(self.assembly_time) / len(self.assembly_time)
-
-            avg_text = self.format_time(int(avg))
-
-        else:
-
-            avg_text = "00:00"
-
-        messagebox.showinfo(
-            "Rata-rata Weapon Assembly",
-            f"Rata-rata waktu:\n{avg_text}"
-        )
+        self.add_log("--- TRY MODE DIMULAI ---")
 
     # FASE PERTANDINGAN
     def to_match_phase(self):
@@ -475,14 +483,18 @@ class RoboconTimerApp:
 
         self.try_mode = False
 
-        # RESET SKOR OTOMATIS
+        # RESET DATA ASSEMBLY
+        self.assembly_time.clear()
+        self.last_assembly_time = 0
+
+        # RESET SKOR
         self.score = 0
 
         self.score_label.config(
             text=f"Skor: {self.score}"
         )
 
-        # RESET BLOK OTOMATIS
+        # RESET BLOK
         self.block_states.clear()
 
         for i, btn in enumerate(self.block_buttons):
@@ -507,12 +519,7 @@ class RoboconTimerApp:
             fg="white"
         )
 
-        self.log_list.insert(
-            tk.END,
-            "--- PERTANDINGAN DIMULAI ---"
-        )
-
-        self.log_list.yview(tk.END)
+        self.add_log("--- PERTANDINGAN DIMULAI ---")
 
     # RESET TIMER
     def reset_timer(self):
@@ -544,10 +551,24 @@ class RoboconTimerApp:
             text=f"Skor: {self.score}"
         )
 
-        # SIMPAN WAKTU ASSEMBLY
-        if action_name == "Weapon Assembly" and self.try_mode:
+        # SIMPAN DATA ASSEMBLY
+        if action_name == "Weapon Assembly" and self.phase == "Pertandingan":
 
-            self.assembly_time.append(self.current_time)
+            elapsed_match_time = (
+                self.match_time - self.current_time
+            )
+
+            assembly_duration = (
+                elapsed_match_time - self.last_assembly_time
+            )
+
+            self.assembly_time.append(
+                assembly_duration
+            )
+
+            self.last_assembly_time = (
+                elapsed_match_time
+            )
 
         # ELAPSED TIME
         if self.try_mode:
@@ -571,9 +592,7 @@ class RoboconTimerApp:
             f"{action_name}{point_text}"
         )
 
-        self.log_list.insert(tk.END, log_text)
-
-        self.log_list.yview(tk.END)
+        self.add_log(log_text)
 
     # TOGGLE BLOCK
     def toggle_block(self, block_number):
@@ -632,9 +651,7 @@ class RoboconTimerApp:
                 f"Blok MF {block_number} diambil lagi"
             )
 
-        self.log_list.insert(tk.END, log_text)
-
-        self.log_list.yview(tk.END)
+        self.add_log(log_text)
 
     # RESET BLOK
     def reset_blocks(self):
@@ -649,12 +666,9 @@ class RoboconTimerApp:
                 text=f"{i+1}"
             )
 
-        self.log_list.insert(
-            tk.END,
+        self.add_log(
             f"[{self.phase}] Semua blok di-reset"
         )
-
-        self.log_list.yview(tk.END)
 
     # RESET SCORE
     def reset_score(self):
@@ -686,17 +700,16 @@ class RoboconTimerApp:
 
         elapsed_str = self.format_time(self.current_time)
 
-        self.log_list.insert(
-            tk.END,
+        self.add_log(
             f"[{self.phase}] *** KUNG FU MASTER ***"
         )
 
-        self.log_list.yview(tk.END)
-
         messagebox.showinfo(
             "KUNG FU MASTER!",
-            f"Robot berhasil mencapai\nKung Fu Master pada {elapsed_str}"
+            f"Robot berhasil mencapai\n"
+            f"Kung Fu Master pada {elapsed_str}"
         )
+
 
 # MAIN
 if __name__ == "__main__":
