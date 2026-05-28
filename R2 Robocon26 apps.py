@@ -185,7 +185,7 @@ class RoboconTimerApp:
         score_frame.pack(side=tk.LEFT, padx=20, anchor="n")
 
         buttons = [
-            ("Pickup Senjata", 0),
+            ("Pickup Weapon", 0),
             ("Weapon Assembly", 10),
             ("KFS Masuk Arena", 10),
             ("Tic-Tac-Toe Tengah", 40),
