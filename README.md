@@ -9,3 +9,4 @@ Timer Count  utnuk Robot 2
 
 2. Timer dilengkapi dengan Mode (Try Mode) yang digunakan untuk latihan berulang tanpa batasan waktu, serta dilengkapi dengan rata-rata assembly pada tiap match 
 
+# R1-R2_Rbcn_timer_app
