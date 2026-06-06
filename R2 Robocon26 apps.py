@@ -10,7 +10,7 @@ class RoboconTimerApp:
 
         self.root = root
         self.root.title("R2 Timer & Scoring Latihan Robocon 2026")
-        self.root.geometry("950x850")
+        self.root.geometry("1100x850") # Diperlebar agar 2 Meihua Forest muat
         self.root.configure(bg="#2c3e50")
 
         # TRY MODE
@@ -42,12 +42,18 @@ class RoboconTimerApp:
 
         self.score = 0
 
-        # BLOK
-        self.block_buttons = []
-        self.block_states = {}
+        # BLOK R2 dan R1
+        self.block_buttons_r2 = {}
+        self.block_states_r2 = {}
+        
+        self.block_buttons_r1 = {}
+        self.block_states_r1 = {}
 
         # UI
         self.setup_ui()
+
+        # Pickup Staff
+        self.staff_pikup_time = None
 
     # AUDIO ALERT
     def play_alert(self):
@@ -185,9 +191,11 @@ class RoboconTimerApp:
         score_frame.pack(side=tk.LEFT, padx=20, anchor="n")
 
         buttons = [
+            ("Pickup Staff", 0),
             ("Pickup Weapon", 0),
             ("Weapon Assembly", 10),
             ("KFS Masuk Arena", 10),
+            ("Tic-Tac-Toe Bawah", 30),
             ("Tic-Tac-Toe Tengah", 40),
             ("Tic-Tac-Toe Atas", 80)
         ]
@@ -210,74 +218,120 @@ class RoboconTimerApp:
 
             btn.grid(row=i, column=0, pady=5)
 
-        # ARENA FRAME
-        arena_frame = tk.Frame(main_frame, bg="#2c3e50")
-        arena_frame.pack(side=tk.LEFT, padx=20, anchor="n")
+        # ARENA FRAME CONTAINER (Untuk membungkus R2 dan R1 bersebelahan)
+        arena_container = tk.Frame(main_frame, bg="#2c3e50")
+        arena_container.pack(side=tk.LEFT, padx=20, anchor="n")
 
-        block_title = tk.Label(
-            arena_frame,
-            text="Meihua Forest",
+        # ================= MEIHUA FOREST R2 =================
+        arena_frame_r2 = tk.Frame(arena_container, bg="#2c3e50")
+        arena_frame_r2.pack(side=tk.LEFT, padx=15, anchor="n")
+
+        block_title_r2 = tk.Label(
+            arena_frame_r2,
+            text="Meihua Forest R2",
             font=("Helvetica", 13, "bold"),
             bg="#2c3e50",
             fg="white"
         )
+        block_title_r2.pack(pady=5)
 
-        block_title.pack(pady=5)
-
-        # RESET BLOK
-        reset_MF_btn = tk.Button(
-            arena_frame,
-            text="Reset Blok MF",
+        reset_MF_btn_r2 = tk.Button(
+            arena_frame_r2,
+            text="Reset Blok R2",
             font=("Helvetica", 10, "bold"),
             bg="#7f8c8d",
             fg="white",
-            command=self.reset_blocks
+            command=lambda: self.reset_blocks("R2")
         )
+        reset_MF_btn_r2.pack(pady=8)
 
-        reset_MF_btn.pack(pady=8)
+        self.block_frame_r2 = tk.Frame(arena_frame_r2, bg="#2c3e50")
+        self.block_frame_r2.pack()
 
-        self.block_frame = tk.Frame(arena_frame, bg="#2c3e50")
-        self.block_frame.pack()
-
-        # BLOK MF
         for row in range(4):
-
             for col in range(3):
-
                 block_number = row * 3 + col + 1
 
-                btn = tk.Button(
-                    self.block_frame,
+                btn_r2 = tk.Button(
+                    self.block_frame_r2,
                     text=f"{block_number}",
                     width=6,
                     height=3,
                     bg="#27ae60",
                     fg="white",
                     font=("Helvetica", 9, "bold"),
-                    command=lambda b=block_number:
-                    self.toggle_block(b)
+                    command=lambda b=block_number: self.toggle_block(b, "R2")
                 )
 
-                btn.grid(
-                    row=row,
-                    column=col,
-                    padx=3,
-                    pady=3
+                btn_r2.grid(row=row, column=col, padx=3, pady=3)
+                self.block_buttons_r2[block_number] = btn_r2
+
+
+        # ================= MEIHUA FOREST R1 =================
+        arena_frame_r1 = tk.Frame(arena_container, bg="#2c3e50")
+        arena_frame_r1.pack(side=tk.LEFT, padx=15, anchor="n")
+
+        block_title_r1 = tk.Label(
+            arena_frame_r1,
+            text="Meihua Forest R1",
+            font=("Helvetica", 13, "bold"),
+            bg="#2c3e50",
+            fg="white"
+        )
+        block_title_r1.pack(pady=5)
+
+        reset_MF_btn_r1 = tk.Button(
+            arena_frame_r1,
+            text="Reset Blok R1",
+            font=("Helvetica", 10, "bold"),
+            bg="#7f8c8d",
+            fg="white",
+            command=lambda: self.reset_blocks("R1")
+        )
+        reset_MF_btn_r1.pack(pady=8)
+
+        self.block_frame_r1 = tk.Frame(arena_frame_r1, bg="#2c3e50")
+        self.block_frame_r1.pack()
+
+        for row in range(4):
+            for col in range(3):
+                block_number = row * 3 + col + 1
+                
+                # Melewatkan blok 5 dan 8 untuk R1
+                if block_number in [5, 8]:
+                    continue
+
+                btn_r1 = tk.Button(
+                    self.block_frame_r1,
+                    text=f"{block_number}",
+                    width=6,
+                    height=3,
+                    bg="#27ae60",
+                    fg="white",
+                    font=("Helvetica", 9, "bold"),
+                    command=lambda b=block_number: self.toggle_block(b, "R1")
                 )
 
-                self.block_buttons.append(btn)
+                btn_r1.grid(row=row, column=col, padx=3, pady=3)
+                self.block_buttons_r1[block_number] = btn_r1
+
+
+        # Control Frame Log Reset Button
+        final_frame = tk.Frame(self.root, bg="#2c3e50")
+        final_frame.pack(pady=10)
 
         # KFM
         kf_master_btn = tk.Button(
-            self.root,
+            final_frame,
             text="KUNG FU MASTER (Menang!)",
             font=("Helvetica", 12, "bold"),
             bg="#9b59b6",
             fg="white",
-            command=self.kung_fu_master
+            command=self.kung_fu_master,
+            width=22
         )
 
-        kf_master_btn.pack(pady=10)
+        kf_master_btn.grid(row=0, column=0, padx=10)
 
         # LOG
         log_label = tk.Label(
@@ -324,17 +378,18 @@ class RoboconTimerApp:
 
         self.scrollbar_y.config(command=self.log_list.yview)
 
-        # RESET SCORE
+        # RESET SCORE & LOG
         reset_score_btn = tk.Button(
-            self.root,
+            final_frame,
             text="Reset Skor & Log",
             font=("Helvetica", 10),
             command=self.reset_score,
             bg="#7f8c8d",
-            fg="white"
+            fg="white",
+            width=18
         )
+        reset_score_btn.grid(row=0, column=1, padx=10)
 
-        reset_score_btn.pack(pady=10)
 
     # TIMER NORMAL
     def update_timer(self):
@@ -423,6 +478,7 @@ class RoboconTimerApp:
                     f"\n{avg_text}"
                 )
 
+
     # TRY TIMER
     def update_try_timer(self):
 
@@ -494,16 +550,15 @@ class RoboconTimerApp:
             text=f"Skor: {self.score}"
         )
 
-        # RESET BLOK
-        self.block_states.clear()
+        # RESET BLOK R2
+        self.block_states_r2.clear()
+        for i, btn in self.block_buttons_r2.items():
+            btn.config(bg="#27ae60", fg="white", text=f"{i}")
 
-        for i, btn in enumerate(self.block_buttons):
-
-            btn.config(
-                bg="#27ae60",
-                fg="white",
-                text=f"{i+1}"
-            )
+        # RESET BLOK R1
+        self.block_states_r1.clear()
+        for i, btn in self.block_buttons_r1.items():
+            btn.config(bg="#27ae60", fg="white", text=f"{i}")
 
         self.phase = "Pertandingan"
 
@@ -572,20 +627,20 @@ class RoboconTimerApp:
 
         # ELAPSED TIME
         if self.try_mode:
-
             elapsed_secs = self.current_time
 
         elif self.phase == "Persiapan":
-
             elapsed_secs = self.setup_time - self.current_time
 
         else:
-
             elapsed_secs = self.match_time - self.current_time
 
         elapsed_str = self.format_time(elapsed_secs)
 
-        point_text = f" (+{points})" if points > 0 else ""
+        if points == 0:
+            point_text = " (time recorded only)"
+        else:
+            point_text = f" (+{points})"
 
         log_text = (
             f"[{self.phase} - {elapsed_str}] "
@@ -594,12 +649,15 @@ class RoboconTimerApp:
 
         self.add_log(log_text)
 
-    # TOGGLE BLOCK
-    def toggle_block(self, block_number):
+    # TOGGLE BLOCK (Dinamis untuk R2 maupun R1)
+    def toggle_block(self, block_number, robot):
 
-        btn = self.block_buttons[block_number - 1]
-
-        current_state = self.block_states.get(block_number, 0)
+        if robot == "R2":
+            btn = self.block_buttons_r2[block_number]
+            current_state = self.block_states_r2.get(block_number, 0)
+        else:
+            btn = self.block_buttons_r1[block_number]
+            current_state = self.block_states_r1.get(block_number, 0)
 
         elapsed_str = self.format_time(self.current_time)
 
@@ -612,11 +670,14 @@ class RoboconTimerApp:
                 text=f"{block_number}\n{elapsed_str}"
             )
 
-            self.block_states[block_number] = 1
+            if robot == "R2":
+                self.block_states_r2[block_number] = 1
+            else:
+                self.block_states_r1[block_number] = 1
 
             log_text = (
                 f"[{self.phase}] "
-                f"Blok MF {block_number} diambil"
+                f"Blok MF {robot} - {block_number} diambil"
             )
 
         # MERAH
@@ -628,11 +689,14 @@ class RoboconTimerApp:
                 text=f"{block_number}\n{elapsed_str}"
             )
 
-            self.block_states[block_number] = 2
+            if robot == "R2":
+                self.block_states_r2[block_number] = 2
+            else:
+                self.block_states_r1[block_number] = 2
 
             log_text = (
                 f"[{self.phase}] "
-                f"Blok MF {block_number} gagal"
+                f"Blok MF {robot} - {block_number} gagal"
             )
 
         # BIRU LAGI
@@ -644,33 +708,34 @@ class RoboconTimerApp:
                 text=f"{block_number}\n{elapsed_str}"
             )
 
-            self.block_states[block_number] = 3
+            if robot == "R2":
+                self.block_states_r2[block_number] = 3
+            else:
+                self.block_states_r1[block_number] = 3
 
             log_text = (
                 f"[{self.phase}] "
-                f"Blok MF {block_number} diambil lagi"
+                f"Blok MF {robot} - {block_number} diambil lagi"
             )
 
         self.add_log(log_text)
 
-    # RESET BLOK
-    def reset_blocks(self):
+    # RESET BLOK (Bisa reset R2 atau R1 secara terpisah)
+    def reset_blocks(self, robot):
 
-        self.block_states.clear()
+        if robot == "R2":
+            self.block_states_r2.clear()
+            for i, btn in self.block_buttons_r2.items():
+                btn.config(bg="#27ae60", fg="white", text=f"{i}")
+            self.add_log(f"[{self.phase}] Semua blok R2 di-reset")
+            
+        else:
+            self.block_states_r1.clear()
+            for i, btn in self.block_buttons_r1.items():
+                btn.config(bg="#27ae60", fg="white", text=f"{i}")
+            self.add_log(f"[{self.phase}] Semua blok R1 di-reset")
 
-        for i, btn in enumerate(self.block_buttons):
-
-            btn.config(
-                bg="#27ae60",
-                fg="white",
-                text=f"{i+1}"
-            )
-
-        self.add_log(
-            f"[{self.phase}] Semua blok di-reset"
-        )
-
-    # RESET SCORE
+    # RESET SCORE (Secara keseluruhan)
     def reset_score(self):
 
         self.score = 0
@@ -681,17 +746,19 @@ class RoboconTimerApp:
 
         self.log_list.delete(0, tk.END)
 
-        self.block_states.clear()
-
         self.assembly_time.clear()
+        self.last_assembly_time = 0
 
-        for i, btn in enumerate(self.block_buttons):
+        # Reset blok R2
+        self.block_states_r2.clear()
+        for i, btn in self.block_buttons_r2.items():
+            btn.config(bg="#27ae60", fg="white", text=f"{i}")
+            
+        # Reset blok R1
+        self.block_states_r1.clear()
+        for i, btn in self.block_buttons_r1.items():
+            btn.config(bg="#27ae60", fg="white", text=f"{i}")
 
-            btn.config(
-                bg="#27ae60",
-                fg="white",
-                text=f"{i+1}"
-            )
 
     # KUNG FU MASTER
     def kung_fu_master(self):
